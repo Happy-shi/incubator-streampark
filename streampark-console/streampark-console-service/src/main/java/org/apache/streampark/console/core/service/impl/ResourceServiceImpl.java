@@ -21,7 +21,6 @@ import org.apache.streampark.common.Constant;
 import org.apache.streampark.common.conf.Workspace;
 import org.apache.streampark.common.fs.FsOperator;
 import org.apache.streampark.common.util.ExceptionUtils;
-import org.apache.streampark.common.util.Utils;
 import org.apache.streampark.console.base.domain.RestRequest;
 import org.apache.streampark.console.base.domain.RestResponse;
 import org.apache.streampark.console.base.exception.ApiAlertException;
@@ -352,7 +351,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource>
         if (jarFile.getName().endsWith(Constant.PYTHON_SUFFIX)) {
             return RestResponse.success().data(resp);
         }
-        String mainClass = Utils.getJarManClass(jarFile);
+        String mainClass = resourceParam.getMainClass();
         if (mainClass == null) {
             // main class is null
             return buildExceptResponse(new RuntimeException("main class is null"), 2);
