@@ -62,6 +62,7 @@ import org.apache.streampark.console.core.watcher.FlinkClusterWatcher;
 import org.apache.streampark.console.core.watcher.FlinkK8sWatcherWrapper;
 import org.apache.streampark.flink.kubernetes.FlinkK8sWatcher;
 import org.apache.streampark.flink.packer.pipeline.PipelineStatusEnum;
+import org.apache.streampark.console.core.service.impl.ResourceServiceImpl;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -151,6 +152,9 @@ public class FlinkApplicationManageServiceImpl extends ServiceImpl<FlinkApplicat
 
     @Autowired
     private FlinkK8sWatcherWrapper k8sWatcherWrapper;
+
+    @Autowired
+    private ResourceServiceImpl resourceServiceImpl;
 
     @PostConstruct
     public void resetOptionState() {
@@ -498,16 +502,18 @@ public class FlinkApplicationManageServiceImpl extends ServiceImpl<FlinkApplicat
 
         // 1) jar job jar file changed
         if (application.isUploadJob()) {
+            File jarFile = new File(WebUtils.getAppTempDir(), appParam.getJar());
             if (!Objects.equals(application.getJar(), appParam.getJar())) {
                 application.setBuild(true);
+                resourceServiceImpl.transferTeamResource(application.getTeamId(), jarFile.getPath());
             } else {
-                File jarFile = new File(WebUtils.getAppTempDir(), appParam.getJar());
                 if (jarFile.exists()) {
                     try {
                         long checkSum = org.apache.commons.io.FileUtils.checksumCRC32(jarFile);
                         if (!Objects.equals(checkSum, application.getJarCheckSum())) {
                             application.setBuild(true);
                             application.setJarCheckSum(checkSum);
+                            resourceServiceImpl.transferTeamResource(application.getTeamId(), jarFile.getPath());
                         }
                     } catch (IOException e) {
                         log.error("Error in checksumCRC32 for {}.", jarFile);
